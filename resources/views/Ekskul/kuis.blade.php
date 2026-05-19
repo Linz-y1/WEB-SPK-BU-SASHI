@@ -3,135 +3,261 @@
 @section('title', 'Kuis Kemampuan')
 
 @push('styles')
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+    body, .content-wrap {
+        background: #FDF6F0 !important;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .page-shell {
+        width: 100%;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 1.3rem 1.5rem 1.8rem;
+        background: #fff;
+        border-radius: 24px;
+        border: 1px solid #f1d4d4;
+        box-shadow: 0 18px 55px rgba(0,0,0,.08);
+        position: relative;
+    }
+
+    .top-bar {
+        background: #d8efc8;
+        border-radius: 10px;
+        padding: .9rem 1.2rem;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .top-brand { display: flex; align-items: center; gap: .7rem; }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+        min-width: 110px;
+        font-size: .98rem;
+        background: #fff;
+        color: #a855f7;
+        border: 1px solid rgba(168,85,247,.35);
+        border-radius: 999px;
+        padding: .65rem 1.1rem;
+        text-decoration: none;
+        font-weight: 700;
+        box-shadow: 0 5px 15px rgba(168,85,247,.12);
+    }
+
+    .brand-avatar {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: #f4b6c2;
+        color: #fff;
+        display: grid; place-items: center;
+        font-weight: bold; font-size: .9rem;
+    }
+
+    .brand-text { display: flex; flex-direction: column; }
+    .brand-text .name     { font-size: .8rem; font-weight: 600; color: #666; }
+    .brand-text .subtitle { font-size: .7rem; color: #aaa; }
+
+    /* ── Blobs ── */
+    .blob-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob-bg span { position: absolute; border-radius: 50%; opacity: .5; }
+    .blob-bg .b1 { width:110px; height:110px; background:#F4A7B9; top:-25px;   left:-25px; }
+    .blob-bg .b2 { width: 65px; height: 65px; background:#C4A9E0; top: 15px;   left:120px; }
+    .blob-bg .b3 { width: 75px; height: 75px; background:#F9D976; top: 55px;   left: 65px; opacity:.45; }
+    .blob-bg .b4 { width:120px; height:120px; background:#F4A7B9; bottom:20px; right:-25px; opacity:.35; }
+    .blob-bg .b5 { width: 60px; height: 60px; background:#C4A9E0; bottom:90px; right:100px; opacity:.4; }
+
+    /* ── Progress ── */
+    .progress-label {
+        font-size: .78rem; font-weight: 600; color: #a08ab0;
+        text-align: right; margin-bottom: .3rem;
+        position: relative; z-index: 2;
+    }
+
     .progress-bar {
-        background: #E5E7EB;
-        border-radius: 99px;
-        height: 8px;
-        overflow: hidden;
+        background: #EAD9F5; border-radius: 99px; height: 8px;
+        overflow: hidden; margin-bottom: 1.4rem;
+        position: relative; z-index: 2;
     }
 
     .progress-fill {
-        height: 100%;
-        border-radius: 99px;
-        background: linear-gradient(90deg, var(--purple), var(--pink));
+        height: 100%; border-radius: 99px;
+        background: linear-gradient(90deg, #C4A9E0, #F4A7B9);
         transition: width .4s ease;
     }
 
-    .progress-label {
-        font-size: .8rem;
-        color: var(--text-muted);
-        text-align: right;
-        margin-bottom: .3rem;
+    /* ── Kartu soal ── */
+    .question-card {
+        background: #C8E6C9; border-radius: 22px;
+        padding: 1.4rem 1.5rem; margin-bottom: 1.5rem;
+        position: relative; z-index: 2;
     }
 
     .question-text {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--text);
-        line-height: 1.5;
-        margin-bottom: 1rem;
+        font-size: 1.1rem; font-weight: 800; color: #3a4a3a;
+        line-height: 1.5; margin: 0;
     }
 
+    /* ── Pilihan jawaban ── */
     .choices {
-        display: flex;
-        flex-direction: column;
-        gap: .6rem;
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: .7rem; position: relative; z-index: 2;
     }
 
     .choice-label {
-        background: #F9FAFB;
-        border: 1.5px solid #E5E7EB;
-        border-radius: var(--radius-sm);
-        padding: .7rem 1rem;
-        font-size: .9rem;
+        background: #f3eeff;
+        border: 2px solid transparent;
+        border-radius: 50px;
+        padding: .75rem 1rem;
+        font-size: .88rem; font-weight: 700;
         cursor: pointer;
-        transition: all .2s;
+        display: flex; align-items: center; gap: .7rem;
+        color: #4a3a5a;
+        transition: border-color .2s, background .2s, transform .15s;
         font-family: 'Nunito', sans-serif;
-        display: flex;
-        align-items: center;
-        gap: .75rem;
     }
 
     .choice-label:hover {
-        border-color: var(--purple);
-        background: var(--purple-light);
+        border-color: #C4A9E0;
+        background: #ede4fd;
+        transform: translateY(-1px);
     }
 
-    .choice-label input[type=radio] {
-        accent-color: var(--purple-dark);
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
-    }
+    .choice-label input[type=radio] { display: none; }
 
     .choice-label:has(input:checked) {
-        border-color: var(--purple-dark);
-        background: var(--purple-light);
-        color: var(--purple-dark);
-        font-weight: 700;
+        border-color: #A07BC0;
+        background: #F0E5FC;
+        color: #6a3a9a;
     }
+
+    /* Badge huruf dengan border lingkaran */
+    .choice-badge {
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #C4A9E0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .8rem; font-weight: 800; color: #7a5a9a;
+        flex-shrink: 0;
+        transition: background .2s, color .2s, border-color .2s;
+    }
+
+    .choice-label:has(input:checked) .choice-badge {
+        background: #A07BC0;
+        border-color: #A07BC0;
+        color: white;
+    }
+
+    /* ── Tombol lanjut — SELALU TAMPIL ── */
+    .btn-next {
+        margin-top: 1.3rem;
+        width: 100%;
+        padding: .9rem;
+        border-radius: 50px;
+        border: none;
+        font-family: 'Nunito', sans-serif;
+        font-size: 1rem; font-weight: 800;
+        position: relative; z-index: 2;
+        transition: background .3s, color .25s, transform .2s, box-shadow .2s;
+
+        /* Default: disabled look */
+        background: #e0d7eb;
+        color: #b8aac8;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    /* Aktif setelah jawaban dipilih */
+    .btn-next.active {
+        background: linear-gradient(90deg, #C4A9E0, #F4A7B9);
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 5px 18px rgba(196,169,224,.45);
+    }
+
+    .btn-next.active:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 9px 24px rgba(196,169,224,.55);
+    }
+
+    /* ── Dots ── */
+    .dots-row {
+        display: flex; justify-content: center; gap: 6px;
+        margin-top: 1.2rem; position: relative; z-index: 2;
+    }
+
+    .step-dot {
+        width: 20px; height: 20px; border-radius: 50%;
+        background: #D9C5ED; display: inline-block;
+        transition: width .3s, background .3s;
+    }
+
+    .step-dot.active { background: #A07BC0; width: 22px; border-radius: 99px; }
 </style>
 @endpush
 
 @section('content')
 
-<div class="header-row">
-    <a href="{{ route('ekskul.pilih') }}" class="back-btn">←</a>
-    <div class="page-title">Tes Kemampuan</div>
+<div class="blob-bg" aria-hidden="true">
+    <span class="b1"></span><span class="b2"></span>
+    <span class="b3"></span><span class="b4"></span><span class="b5"></span>
 </div>
 
-<div>
-    <div class="progress-label">
-        Pertanyaan {{ $nomor }} dari {{ $totalSoal }}
+<div class="page-shell">
+
+    <div class="top-bar">
+        <div class="top-brand">
+            <div class="brand-avatar">S</div>
+            <div class="brand-text">
+                <div class="name">Serevina High School</div>
+                <div class="subtitle">Kuis Kemampuan</div>
+            </div>
+        </div>
+        <a href="{{ route('ekskul.pilih') }}" class="back-link">&#8592; Back To Pilih Ekskul</a>
     </div>
 
+    <div class="progress-label">Pertanyaan {{ $nomor }} dari {{ $totalSoal }}</div>
     <div class="progress-bar">
-       <div class="progress-fill"
-    @style(['width: '.$progress.'%'])></div>
+        <div class="progress-fill" style="width: {{ $progress }}%"></div>
     </div>
-</div>
 
-<form method="POST" action="{{ route('ekskul.simpan-jawaban') }}" id="kuis-form">
-    @csrf
+    <form method="POST" action="{{ route('ekskul.simpan-jawaban') }}" id="kuis-form">
+        @csrf
+        <input type="hidden" name="nomor_soal" value="{{ $nomor - 1 }}">
 
-    <input type="hidden" name="nomor_soal" value="{{ $nomor - 1 }}">
-
-    <div class="card">
-        <div class="question-text">
-            {{ $soal['pertanyaan'] }}
+        <div class="question-card">
+            <p class="question-text">{{ $soal['pertanyaan'] }}</p>
         </div>
 
         <div class="choices">
+            @php $letters = ['A','B','C','D','E']; @endphp
             @foreach ($soal['pilihan'] as $idx => $pilihan)
                 <label class="choice-label">
-                    <input 
-                        type="radio" 
-                        name="jawaban" 
-                        value="{{ $idx }}" 
-                        required
-                    >
-
+                    <input type="radio" name="jawaban" value="{{ $idx }}" required>
+                    <span class="choice-badge">{{ $letters[$idx] ?? $idx+1 }}</span>
                     {{ $pilihan }}
                 </label>
             @endforeach
         </div>
-    </div>
 
-    <button 
-        type="submit" 
-        class="btn btn-secondary" 
-        id="btn-next" 
-        style="display:none"
-    >
-        {{ $nomor < $totalSoal ? 'Lanjut →' : 'Selesai ✓' }}
-    </button>
-</form>
+        {{-- Tombol selalu tampil, disabled sampai jawaban dipilih --}}
+        <button
+            type="submit"
+            class="btn-next"
+            id="btn-next"
+            disabled
+        >
+            {{ $nomor < $totalSoal ? 'Lanjut →' : 'Selesai ✓' }}
+        </button>
+    </form>
 
-<div class="dots-row">
-    <span class="step-dot"></span>
-    <span class="step-dot active"></span>
-    <span class="step-dot"></span>
 </div>
 
 @endsection
@@ -140,7 +266,9 @@
 <script>
     document.querySelectorAll('input[type=radio]').forEach(function(radio) {
         radio.addEventListener('change', function() {
-            document.getElementById('btn-next').style.display = 'block';
+            var btn = document.getElementById('btn-next');
+            btn.disabled = false;
+            btn.classList.add('active');
         });
     });
 </script>
