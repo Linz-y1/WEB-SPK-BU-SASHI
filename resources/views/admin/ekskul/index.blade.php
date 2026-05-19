@@ -1,33 +1,76 @@
-@extends('admin.app')
+@extends('admin.layouts.app')
 
-@section('admin-content')
-    <h2 class="card-title">Kelola Ekskul</h2>
-    <a href="{{ route('admin.ekskul.create') }}" class="btn btn-primary" style="display:inline-block;margin-top:1rem;padding:.5rem 1rem">Buat Ekskul</a>
+@section('title', 'Data Ekstrakurikuler')
+@section('page-title', 'Data Ekstrakurikuler')
+@section('page-subtitle', 'Kelola ekstrakurikuler, kuota, dan status pendaftaran.')
 
-    <table style="width:100%;border-collapse:collapse;margin-top:1rem">
-        <thead>
-            <tr>
-                <th style="text-align:left;padding:.5rem">Nama</th>
-                <th style="text-align:left;padding:.5rem">Slug</th>
-                <th style="text-align:left;padding:.5rem">Kuota</th>
-                <th style="text-align:left;padding:.5rem">Terpakai</th>
-                <th style="text-align:left;padding:.5rem">Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($ekskuls as $e)
-            <tr style="border-top:1px solid #eee">
-                <td style="padding:.5rem">{{ $e->nama }}</td>
-                <td style="padding:.5rem">{{ $e->slug }}</td>
-                <td style="padding:.5rem">{{ $e->quota }}</td>
-                <td style="padding:.5rem">{{ $e->approved_count }}</td>
-                <td style="padding:.5rem">
-                    <a href="{{ route('admin.ekskul.edit', $e->id) }}" class="btn btn-secondary" style="padding:.35rem .6rem">Edit</a>
-                    <form method="POST" action="{{ route('admin.ekskul.destroy', $e->id) }}" style="display:inline">@csrf @method('DELETE')<button class="btn" style="background:#FEE2E2;color:#991B1B;padding:.35rem .6rem;margin-left:.5rem">Hapus</button></form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+@section('content')
+
+<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;">
+    <div>
+        <h2 class="card-title">Daftar Ekstrakurikuler</h2>
+        <p>Kelola daftar ekstrakurikuler dan kuota anggota setiap ekskul.</p>
+    </div>
+    <a href="{{ route('admin.ekskul.create') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Tambah Ekskul
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Ekskul</th>
+                        <th>Kuota</th>
+                        <th>Disetujui</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($ekskuls as $ekskul)
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:18px;">{{ $ekskul->icon ?? '🎓' }}</span>
+                                <div>
+                                    <strong>{{ $ekskul->nama }}</strong><br>
+                                    <small style="color:var(--text-mid);">{{ \Illuminate\Support\Str::limit($ekskul->deskripsi, 50) }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ $ekskul->quota ? $ekskul->quota . ' orang' : 'Tanpa batas' }}</td>
+                        <td>{{ $ekskul->approved_count ?? 0 }}</td>
+                        <td>
+                            @if($ekskul->quota && $ekskul->approved_count >= $ekskul->quota)
+                                <span class="badge badge-pink">Penuh</span>
+                            @else
+                                <span class="badge badge-green">Tersedia</span>
+                            @endif
+                        </td>
+                        <td style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <a href="{{ route('admin.ekskul.edit', $ekskul->id) }}" class="btn btn-sm btn-outline">Edit</a>
+                            <form method="POST" action="{{ route('admin.ekskul.destroy', $ekskul->id) }}" style="display:inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('Hapus ekskul ini?')">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:50px;color:#bbb;">
+                            <i class="fa-solid fa-star" style="font-size:32px;display:block;margin-bottom:10px;opacity:.4;"></i>
+                            Belum ada ekskul terdaftar.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 @endsection

@@ -5,69 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Ekskul;
 use App\Models\HasilRekomendasi;
 use App\Models\KuisJawaban;
+use App\Models\KuisSoal;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class EkskulController extends Controller
 {
-    // Data soal kuis (bisa dipindah ke config/database kalau mau)
-    private array $soalKuis = [
-        [
-            'pertanyaan' => 'Di waktu luang, kamu lebih suka melakukan apa?',
-            'pilihan'    => [
-                'Mendengarkan atau memainkan musik',
-                'Menggambar atau melukis',
-                'Bermain olahraga bersama teman',
-                'Ngoding atau main game',
-            ],
-        ],
-        [
-            'pertanyaan' => 'Saat kerja kelompok, peran apa yang paling cocok untukmu?',
-            'pilihan'    => [
-                'Membuat presentasi yang menarik',
-                'Jadi pemimpin yang mengatur strategi',
-                'Mendokumentasikan kegiatan (foto/video)',
-                'Penulis laporan dan naskah',
-            ],
-        ],
-        [
-            'pertanyaan' => 'Kalau kamu punya energi lebih di sore hari, kamu akan...',
-            'pilihan'    => [
-                'Latihan atau ikut kompetisi',
-                'Berlatih alat musik atau menyanyi',
-                'Eksplorasi teknologi atau aplikasi baru',
-                'Menonton film atau pertunjukan seni',
-            ],
-        ],
-        [
-            'pertanyaan' => 'Prestasi yang paling ingin kamu raih adalah...',
-            'pilihan'    => [
-                'Juara olimpiade olahraga',
-                'Pentas seni di depan banyak orang',
-                'Buat aplikasi yang dipakai orang lain',
-                'Terbit tulisan atau foto di majalah',
-            ],
-        ],
-        [
-            'pertanyaan' => 'Teman-temanmu sering memujimu karena...',
-            'pilihan'    => [
-                'Kreatif dan punya selera seni',
-                'Jago teknologi dan problem solving',
-                'Lincah dan semangat bergerak',
-                'Pandai bercerita dan mengekspresikan diri',
-            ],
-        ],
-    ];
-
-    // Mapping jawaban ke slug ekskul
-    private array $jawabanMap = [
-        0 => ['musik',     'seni',     'olahraga', 'teknologi'],
-        1 => ['seni',      'olahraga', 'fotografi','sastra'],
-        2 => ['olahraga',  'musik',    'teknologi','teater'],
-        3 => ['seni',      'olahraga', 'teknologi','sastra'],
-        4 => ['seni',      'teknologi','olahraga', 'teater'],
-    ];
 
     // ─── HALAMAN PILIH EKSKUL ────────────────────────────────────
 
@@ -95,6 +39,11 @@ class EkskulController extends Controller
         $siswa = Auth::guard('siswa')->user();
         $siswa->ekskuls()->sync($request->ekskul_ids);
 
+        // Reset ulang kuis ketika siswa memilih ekskul kembali,
+        // sehingga soal baru dari admin bisa muncul kembali.
+        $siswa->kuisJawabans()->delete();
+        $siswa->hasilRekomendasi()->delete();
+
         return redirect()->route('ekskul.kuis');
     }
 
@@ -105,24 +54,31 @@ class EkskulController extends Controller
         /** @var Siswa|null $siswa */
         $siswa = Auth::guard('siswa')->user();
 
-        // Ambil nomor soal berikutnya yang belum dijawab
-        $sudahDijawab = $siswa->kuisJawabans()->pluck('nomor_soal')->toArray();
-        $totalSoal    = count($this->soalKuis);
-        $nomorBerikut = null;
-
-        for ($i = 0; $i < $totalSoal; $i++) {
-            if (!in_array($i, $sudahDijawab)) {
-                $nomorBerikut = $i;
-                break;
-            }
+        $soalKuis = KuisSoal::orderBy('order')->get();
+        if ($soalKuis->isEmpty()) {
+            $soalKuis = collect(KuisSoal::defaultQuestions());
         }
 
-        // Semua soal sudah dijawab → ke halaman terima kasih
+        // Ambil nomor soal berikutnya yang belum dijawab
+        $sudahDijawab = $siswa->kuisJawabans()->pluck('nomor_soal')->toArray();
+        $totalSoal    = count($soalKuis);
+        $nomorBerikut = null;
+
+        if ($totalSoal > 0) {
+            $semuaNomorSoal = $soalKuis->keys()->toArray();
+            $belumDijawab = array_values(array_filter($semuaNomorSoal, function ($nomor) use ($sudahDijawab) {
+                return ! in_array($nomor, $sudahDijawab, true);
+            }));
+
+            $nomorBerikut = $belumDijawab[0] ?? null;
+        }
+
+        // Semua soal sudah dijawab atau tidak ada soal tersedia → ke halaman terima kasih
         if ($nomorBerikut === null) {
             return redirect()->route('ekskul.terimakasih');
         }
 
-        $soal        = $this->soalKuis[$nomorBerikut];
+        $soal        = $soalKuis[$nomorBerikut];
         $progress    = (count($sudahDijawab) / $totalSoal) * 100;
         $nomor       = $nomorBerikut + 1;
 
@@ -181,32 +137,37 @@ class EkskulController extends Controller
     // ─── LOGIC PERHITUNGAN ───────────────────────────────────────
 
     private function hitungRekomendasi(Siswa $siswa): string
-{
-    $skor = [];
+    {
+        $skor = [];
 
-    // Skor dari pilihan ekskul
-    foreach ($siswa->ekskuls as $ekskul) {
-        $skor[$ekskul->slug] = ($skor[$ekskul->slug] ?? 0) + 3;
-    }
-
-    // Skor dari jawaban kuis
-    foreach ($siswa->kuisJawabans as $jawaban) {
-        $nomor = $jawaban->nomor_soal;
-        $idx   = $jawaban->jawaban;
-        $slug  = $this->jawabanMap[$nomor][$idx] ?? null;
-
-        if ($slug) {
-            $skor[$slug] = ($skor[$slug] ?? 0) + 2;
+        // Skor dari pilihan ekskul
+        foreach ($siswa->ekskuls as $ekskul) {
+            $skor[$ekskul->slug] = ($skor[$ekskul->slug] ?? 0) + 3;
         }
+
+        $soalKuis = KuisSoal::orderBy('order')->get();
+        if ($soalKuis->isEmpty()) {
+            $soalKuis = collect(KuisSoal::defaultQuestions());
+        }
+
+        // Skor dari jawaban kuis
+        foreach ($siswa->kuisJawabans as $jawaban) {
+            $nomor = $jawaban->nomor_soal;
+            $idx   = $jawaban->jawaban;
+            $slug  = data_get($soalKuis->get($nomor), 'jawaban_map.' . $idx);
+
+            if ($slug) {
+                $skor[$slug] = ($skor[$slug] ?? 0) + 2;
+            }
+        }
+
+        if (empty($skor)) {
+            return 'musik';
+        }
+
+        arsort($skor);
+
+        return array_key_first($skor);
     }
-
-    if (empty($skor)) {
-        return 'musik';
-    }
-
-    arsort($skor);
-
-    return array_key_first($skor);
-}
 
 }

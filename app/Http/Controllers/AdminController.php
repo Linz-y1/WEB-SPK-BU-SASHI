@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ekskul;
+use App\Models\HasilRekomendasi;
+use App\Models\KuisSoal;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,25 +15,42 @@ class AdminController extends Controller
     {
         $totalEkskul = Ekskul::count();
         $totalSiswa = DB::table('siswas')->count();
-        $pendaftaranPending = DB::table('siswa_ekskul')->where('status', 'pending')->count();
+        $totalKuis = DB::table('kuis_jawabans')->distinct('siswa_id')->count('siswa_id');
+        $totalRekomendasi = DB::table('hasil_rekomendasis')->count();
+        $recentSiswa = \App\Models\Siswa::with(['kuisJawabans', 'hasilRekomendasi'])
+            ->latest('created_at')
+            ->limit(5)
+            ->get();
+        $ekskulPopuler = Ekskul::withCount(['siswas as total'])->orderBy('total', 'desc')->limit(4)->get();
 
-        return view('admin.dashboard', compact('totalEkskul', 'totalSiswa', 'pendaftaranPending'));
+        return view('admin.dashboard', compact(
+            'totalEkskul',
+            'totalSiswa',
+            'totalKuis',
+            'totalRekomendasi',
+            'recentSiswa',
+            'ekskulPopuler'
+        ));
     }
 
-    // List pendaftaran (siswa_ekskul)
+    // List siswa
     public function siswaIndex()
     {
-        $items = DB::table('siswa_ekskul')
-            ->join('siswas', 'siswa_ekskul.siswa_id', '=', 'siswas.id')
-            ->join('ekskuls', 'siswa_ekskul.ekskul_id', '=', 'ekskuls.id')
-            ->select('siswa_ekskul.id as pivot_id', 'siswas.*', 'ekskuls.nama as ekskul_nama', 'siswa_ekskul.status')
-            ->orderBy('siswa_ekskul.created_at', 'desc')
-            ->get();
+        $siswas = \App\Models\Siswa::with(['kuisJawabans', 'hasilRekomendasi', 'ekskuls'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
 
-        return view('admin.siswa.index', compact('items'));
+        return view('admin.siswa.index', compact('siswas'));
     }
 
-    public function approve(Request $request, $pivotId)
+    public function siswaShow(Siswa $siswa)
+    {
+        $siswa->load(['kuisJawabans', 'hasilRekomendasi', 'ekskuls']);
+
+        return view('admin.siswa.show', compact('siswa'));
+    }
+
+    public function approve(Request $request, int $pivotId)
     {
         $pivot = DB::table('siswa_ekskul')->where('id', $pivotId)->first();
         if (! $pivot) {
@@ -57,7 +77,7 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Pendaftaran disetujui.');
     }
 
-    public function reject(Request $request, $pivotId)
+    public function reject(Request $request, int $pivotId)
     {
         $pivot = DB::table('siswa_ekskul')->where('id', $pivotId)->first();
         if (! $pivot) {
@@ -82,7 +102,9 @@ class AdminController extends Controller
     // Ekskul CRUD
     public function ekskulIndex()
     {
-        $ekskuls = Ekskul::orderBy('created_at', 'desc')->get();
+        $ekskuls = Ekskul::withCount(['siswas as siswas_count'])
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('admin.ekskul.index', compact('ekskuls'));
     }
 
@@ -128,5 +150,81 @@ class AdminController extends Controller
     {
         $ekskul->delete();
         return redirect()->route('admin.ekskul.index')->with('success', 'Ekskul dihapus.');
+    }
+
+    public function kuisIndex()
+    {
+        $kuisSoals = KuisSoal::orderBy('order')->paginate(12);
+
+        return view('admin.kuis.index', compact('kuisSoals'));
+    }
+
+    public function kuisCreate()
+    {
+        return view('admin.kuis.create');
+    }
+
+    public function kuisStore(Request $request)
+    {
+        $request->validate([
+            'pertanyaan' => 'required|string|max:1000',
+            'pilihan' => 'required|array|size:4',
+            'pilihan.*' => 'required|string|max:255',
+            'jawaban_map' => 'required|array|size:4',
+            'jawaban_map.*' => 'required|string|max:255',
+            'order' => 'required|integer|min:0',
+        ]);
+
+        KuisSoal::create([
+            'pertanyaan' => $request->input('pertanyaan'),
+            'pilihan' => $request->input('pilihan'),
+            'jawaban_map' => $request->input('jawaban_map'),
+            'order' => $request->input('order'),
+        ]);
+
+        return redirect()->route('admin.kuis.index')->with('success', 'Soal kuis berhasil ditambahkan.');
+    }
+
+    public function kuisEdit(KuisSoal $kuisSoal)
+    {
+        return view('admin.kuis.edit', compact('kuisSoal'));
+    }
+
+    public function kuisUpdate(Request $request, KuisSoal $kuisSoal)
+    {
+        $request->validate([
+            'pertanyaan' => 'required|string|max:1000',
+            'pilihan' => 'required|array|size:4',
+            'pilihan.*' => 'required|string|max:255',
+            'jawaban_map' => 'required|array|size:4',
+            'jawaban_map.*' => 'required|string|max:255',
+            'order' => 'required|integer|min:0',
+        ]);
+
+        $kuisSoal->update([
+            'pertanyaan' => $request->input('pertanyaan'),
+            'pilihan' => $request->input('pilihan'),
+            'jawaban_map' => $request->input('jawaban_map'),
+            'order' => $request->input('order'),
+        ]);
+
+        return redirect()->route('admin.kuis.index')->with('success', 'Soal kuis berhasil diperbarui.');
+    }
+
+    public function kuisDestroy(KuisSoal $kuisSoal)
+    {
+        $kuisSoal->delete();
+        return redirect()->route('admin.kuis.index')->with('success', 'Soal kuis berhasil dihapus.');
+    }
+
+    public function hasilIndex()
+    {
+        $totalRekomendasi = DB::table('hasil_rekomendasis')->count();
+        return view('admin.hasil.index', compact('totalRekomendasi'));
+    }
+
+    public function settings()
+    {
+        return view('admin.settings');
     }
 }

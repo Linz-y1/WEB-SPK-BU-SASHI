@@ -39,7 +39,6 @@
             display: flex;
         }
 
-        /* ── Decorative blobs in background ── */
         body::before {
             content: '';
             position: fixed;
@@ -61,7 +60,6 @@
             z-index: 0;
         }
 
-        /* ─────────── SIDEBAR ─────────── */
         .sidebar {
             width: 260px;
             min-height: 100vh;
@@ -167,7 +165,6 @@
         .sidebar-footer .nav-item:hover { background: #fff5f5; }
         .sidebar-footer .nav-icon { background: #fff5f5; }
 
-        /* ─────────── MAIN ─────────── */
         .main-wrap {
             margin-left: 260px;
             flex: 1;
@@ -178,7 +175,6 @@
             z-index: 1;
         }
 
-        /* ─────────── TOPBAR ─────────── */
         .topbar {
             height: 68px;
             background: rgba(255,255,255,.85);
@@ -218,10 +214,13 @@
         }
         .topbar-search:focus-within { border-color: var(--pink-300); }
         .topbar-search input {
-            border: none; background: none;
+            border: none;
+            background: none;
             font-family: 'Nunito', sans-serif;
-            font-size: 13px; color: var(--text-dark);
-            outline: none; width: 180px;
+            font-size: 13px;
+            color: var(--text-dark);
+            outline: none;
+            width: 180px;
         }
         .topbar-search i { color: var(--pink-300); font-size: 13px; }
 
@@ -253,13 +252,11 @@
             border: 2px solid white;
         }
 
-        /* ─────────── PAGE CONTENT ─────────── */
         .page-content {
             flex: 1;
             padding: 28px;
         }
 
-        /* ─────────── CARDS ─────────── */
         .card {
             background: var(--white);
             border-radius: var(--radius-lg);
@@ -278,7 +275,6 @@
         }
         .card-body { padding: 24px; }
 
-        /* ─────────── STAT CARDS ─────────── */
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -324,7 +320,6 @@
             background: var(--green-100); color: var(--green-400);
         }
 
-        /* ─────────── TABLE ─────────── */
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         thead th {
@@ -351,7 +346,6 @@
         .badge-green { background: var(--green-100); color: var(--green-400); }
         .badge-gray  { background: #f0f0f0; color: #888; }
 
-        /* ─────────── BUTTONS ─────────── */
         .btn {
             display: inline-flex; align-items: center; gap: 8px;
             padding: 10px 20px;
@@ -385,7 +379,6 @@
         .btn-sm { padding: 7px 14px; font-size: 12px; }
         .btn-icon { padding: 8px 10px; border-radius: 10px; }
 
-        /* ─────────── FORM CONTROLS ─────────── */
         .form-group { margin-bottom: 18px; }
         .form-label {
             display: block; font-size: 13px;
@@ -409,7 +402,6 @@
             box-shadow: 0 0 0 3px rgba(244,88,122,.08);
         }
 
-        /* ─────────── ALERTS ─────────── */
         .alert {
             padding: 14px 18px;
             border-radius: var(--radius-sm);
@@ -420,7 +412,6 @@
         .alert-success { background: var(--green-100); color: #2e7d32; border-left: 4px solid var(--green-400); }
         .alert-error   { background: var(--pink-100);  color: #c62828; border-left: 4px solid var(--pink-400); }
 
-        /* ─────────── MOBILE ─────────── */
         .sidebar-toggle {
             display: none;
             background: none; border: none; cursor: pointer;
@@ -434,7 +425,6 @@
             .topbar-search { display: none; }
         }
 
-        /* ─────────── DECORATIVE DOTS ─────────── */
         .page-content > .dots-decor {
             position: fixed;
             top: 80px; right: 30px;
@@ -449,7 +439,6 @@
 </head>
 <body>
 
-    <!-- ── Sidebar ── -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="brand-icon"><i class="fa-solid fa-school-flag"></i></div>
@@ -479,22 +468,16 @@
                 Ekstrakurikuler
             </a>
 
-            <a href="#" class="nav-item {{ request()->routeIs('admin.kuis.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.kuis.index') }}" class="nav-item {{ request()->routeIs('admin.kuis.*') ? 'active' : '' }}">
                 <span class="nav-icon"><i class="fa-solid fa-clipboard-question"></i></span>
                 Kuis Minat
             </a>
 
-            <a href="#" class="nav-item {{ request()->routeIs('admin.hasil.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.hasil.index') }}" class="nav-item {{ request()->routeIs('admin.hasil.*') ? 'active' : '' }}">
                 <span class="nav-icon"><i class="fa-solid fa-chart-bar"></i></span>
                 Hasil Rekomendasi
             </a>
 
-            <div class="nav-section-label">Pengaturan</div>
-
-            <a href="#" class="nav-item">
-                <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
-                Pengaturan
-            </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -508,7 +491,6 @@
         </div>
     </aside>
 
-    <!-- ── Main ── -->
     <div class="main-wrap">
         <header class="topbar">
             <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
@@ -518,16 +500,6 @@
             <div class="topbar-title">
                 @yield('page-title', 'Dashboard')
                 <small>@yield('page-subtitle', 'Selamat datang kembali!')</small>
-            </div>
-
-            <div class="topbar-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Cari sesuatu...">
-            </div>
-
-            <div class="topbar-notif">
-                <i class="fa-solid fa-bell"></i>
-                <span class="notif-dot"></span>
             </div>
 
             <div class="topbar-avatar" title="{{ Auth::user()->name ?? 'Admin' }}">

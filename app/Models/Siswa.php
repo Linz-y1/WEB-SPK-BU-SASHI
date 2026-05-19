@@ -27,13 +27,25 @@ class Siswa extends Authenticatable
     // Relasi ke ekskul yang dipilih (many-to-many)
     public function ekskuls()
     {
-        return $this->belongsToMany(Ekskul::class, 'siswa_ekskul');
+        return $this->belongsToMany(Ekskul::class, 'siswa_ekskul')
+            ->withPivot(['id', 'status', 'approved_by', 'approved_at'])
+            ->withTimestamps();
     }
 
     // Relasi ke jawaban kuis
     public function kuisJawabans()
     {
         return $this->hasMany(KuisJawaban::class);
+    }
+
+    public function kuisJawaban()
+    {
+        return $this->kuisJawabans();
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->nama;
     }
 
     // Relasi ke hasil rekomendasi
