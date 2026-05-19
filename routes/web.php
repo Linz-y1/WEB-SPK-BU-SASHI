@@ -43,3 +43,6 @@ Route::middleware('auth:siswa')->prefix('ekskul')->name('ekskul.')->group(functi
     Route::get('/terimakasih', [EkskulController::class, 'terimakasih'])->name('terimakasih');
     Route::get('/hasil',       [EkskulController::class, 'hasil'])->name('hasil');
 });
+
+// Admin routes (separate file)
+require __DIR__ . '/web_admin.php';

@@ -78,6 +78,18 @@ class SiswaAuthController extends Controller
             return redirect()->route('ekskul.kuis');
         }
 
+        // Jika tidak berhasil login sebagai siswa, coba login sebagai user (admin)
+        $userLogin = $request->nomor_siswa;
+        if (Auth::attempt(['email' => $userLogin, 'password' => $request->password], $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            $user = Auth::user();
+            if (($user->role ?? 'user') === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            // jika bukan admin, logout dan tampilkan error
+            Auth::logout();
+        }
+
         return back()->withErrors([
             'nomor_siswa' => 'Nomor siswa atau password salah.',
         ])->onlyInput('nomor_siswa');
