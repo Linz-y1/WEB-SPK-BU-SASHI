@@ -13,12 +13,12 @@
             --purple: #A78BFA; --purple-dark: #7C3AED; --purple-light: #F5F3FF;
             --green-dark: #059669; --blue-dark: #2563EB;
             --text: #1F2937; --text-muted: #6B7280; --text-light: #9CA3AF;
-            --bg: #FDF8FF; --white: #fff;
-            --radius: 16px; --radius-sm: 10px;
-            --shadow: 0 4px 24px rgba(167,139,250,0.15);
-        }
-        body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-        .app { max-width: 420px; margin: 0 auto; padding: 1.5rem 1rem; min-height: 100vh; display: flex; flex-direction: column; gap: 1.25rem; }
+--bg: #FCE8F3; --white: #fff;
+        --radius: 16px; --radius-sm: 10px;
+        --shadow: 0 15px 60px rgba(15,23,42,0.08);
+    }
+        body { font-family: 'Nunito', sans-serif; background: radial-gradient(circle at top left, rgba(251,207,232,.6), transparent 22%), radial-gradient(circle at bottom right, rgba(248,113,113,.12), transparent 20%), linear-gradient(180deg, #FFF7FE 0%, #FCE8F3 100%); color: var(--text); min-height: 100vh; }
+        .app { width: 100%; max-width: none; margin: 0; padding: 2.75rem 2rem; min-height: 100vh; display: flex; flex-direction: column; gap: 1.5rem; }
 
         .card { background: var(--white); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
         .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
