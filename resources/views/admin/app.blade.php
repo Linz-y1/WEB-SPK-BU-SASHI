@@ -462,10 +462,10 @@
         <nav class="sidebar-nav">
             <div class="nav-section-label">Utama</div>
 
-            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <!-- <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
                 Dashboard
-            </a>
+            </a> -->
 
             <div class="nav-section-label">Manajemen</div>
 

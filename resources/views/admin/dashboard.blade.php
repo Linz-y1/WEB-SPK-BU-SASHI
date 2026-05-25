@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
 @section('title', 'Dashboard Admin')
-@section('page-title', 'Dashboard')
+@section('page-title', 'DASHBOARD')
 @section('page-subtitle', 'Ringkasan data ekstrakurikuler sekolah')
 
 @section('content')
@@ -532,9 +532,6 @@ tbody tr:hover { background: rgba(255,240,245,0.6); }
             </a>
             <a href="{{ route('admin.siswa.index') }}" class="btn btn-green" style="justify-content:center;">
                 <i class="fa-solid fa-users"></i> Kelola Siswa
-            </a>
-            <a href="#" class="btn btn-outline" style="justify-content:center;">
-                <i class="fa-solid fa-download"></i> Export Laporan
             </a>
             <div style="margin-top:8px;padding:14px;background:linear-gradient(135deg,rgba(255,214,231,0.4),rgba(195,232,204,0.3));border-radius:16px;border:1px solid rgba(255,179,198,0.25);text-align:center;">
                 <div style="font-size:22px;margin-bottom:4px;">🌸✨🌿</div>
