@@ -246,8 +246,8 @@
 
     {{-- ══ KANAN: GAMBAR ══ --}}
     <div class="rp-right">
-        {{-- Ganti dengan foto lokal: <img src="{{ asset('images/foto-sekolah.jpg') }}" alt="EkSmart"> --}}
-        <img src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=900&q=80" alt="EkSmart">
+        {{-- Ganti dengan foto lokal: <img src="{{ asset('images/laptop wallpaper 2.jpg') }}" alt="EkSmart"> --}}
+        <img src="{{ asset('images/laptop wallpaper 2.jpg') }}" alt="EkSmart">
 
         {{-- Wave SVG organik — melengkung ke kiri --}}
         <svg class="rp-wave" viewBox="0 0 90 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">

@@ -186,8 +186,7 @@
     {{-- ══ KIRI: GAMBAR ══ --}}
     <div class="lp-left">
         {{-- Ganti URL ini dengan asset gambar lokal kamu --}}
-        {{-- <img src="{{ asset('images/foto-sekolah.jpg') }}" alt="EkSmart"> --}}
-        <img src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=900&q=80" alt="EkSmart">
+        <img src="{{ asset('images/laptop wallpaper 2.jpg') }}" alt="EkSmart">
 
         {{-- Wave SVG organik --}}
         <svg class="lp-wave" viewBox="0 0 90 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
