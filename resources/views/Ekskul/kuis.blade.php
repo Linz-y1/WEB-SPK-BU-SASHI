@@ -199,6 +199,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: .35rem;
         min-width: 110px;
         font-size: .98rem;
         background: #fff;
@@ -209,6 +210,7 @@
         text-decoration: none;
         font-weight: 700;
         box-shadow: 0 5px 15px rgba(168,85,247,.12);
+        cursor: pointer;
     }
 
     .page-title {
@@ -227,7 +229,7 @@
 </div>
 
 <div class="header-row">
-    <a href="{{ route('ekskul.pilih') }}" class="back-btn">&#8592; Pilih Ekskul</a>
+    <a href="{{ route('ekskul.pilih') }}" class="back-btn">&#8592; back </a>
     <div class="page-title">Tes Kemampuan</div>
 </div>
 
